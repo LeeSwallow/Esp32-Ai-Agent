@@ -4,19 +4,23 @@
 
 using namespace websockets;
 
-const char* SERVER_HOST = "192.168.0.10";  // 서버 IP
-const int   SERVER_PORT = 8000;             // 서버 포트
-const char* DEVICE_ID   = "esp32-1";       // 고유 디바이스 ID(출하/초기화 시 설정)
+const char* SERVER_HOST = "192.168.0.10";   // 서버 IP
+const int   SERVER_PORT = 8000;              // 서버 포트
+const char* DEVICE_ID   = "esp32-1";        // 고유 디바이스 ID(출하/초기화 시 설정)
+
+// 매직 넘버 상수화
+const unsigned long RECONNECT_INTERVAL_MS = 5000;
+const int WIFI_PORTAL_TIMEOUT_SEC = 180;
 
 WebsocketsClient wsClient;
-unsigned long lastReconnectAttempt = 0;
+unsigned long lastReconnectAttemptMs = 0;
 
 bool connectWiFiManager() {
     WiFi.mode(WIFI_STA);
     WiFiManager wm;
     wm.setTitle("ESP32 WiFi Setup");
     wm.setConfigPortalBlocking(true);
-    wm.setConfigPortalTimeout(180); // 3분 후 자동 종료
+    wm.setConfigPortalTimeout(WIFI_PORTAL_TIMEOUT_SEC); // 3분 후 자동 종료
 
     Serial.println("Trying autoConnect() or opening portal 'ESP32-Setup'...");
     bool res = wm.autoConnect("ESP32-Setup");
@@ -83,16 +87,16 @@ void loop() {
         if (!connectWiFiManager()) {
             delay(5000);
         }
-        lastReconnectAttempt = millis();
+        lastReconnectAttemptMs = millis();
     }
 
     if (!wsClient.available()) {
         unsigned long now = millis();
-        if (now - lastReconnectAttempt > 5000) {
-            lastReconnectAttempt = now;
+        if (now - lastReconnectAttemptMs >= RECONNECT_INTERVAL_MS) {
+            lastReconnectAttemptMs = now;
             connectWebSocket();
         }
-        delay(10);
+        delay(1);
         return;
     }
 

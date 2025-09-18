@@ -13,7 +13,7 @@ async def device_ws(websocket: WebSocket, device_id: str) -> None:
     await websocket.accept()
     db = SessionLocal()
     try:
-        device = device_crud.get_by_name(db, device_id)
+        device = device_crud.get_by_device_id(db, device_id)
         if not device:
             device = device_crud.create(db, device_id)
     finally:

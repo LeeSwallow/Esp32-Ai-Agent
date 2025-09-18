@@ -9,7 +9,7 @@ from app.scheme.device import DeviceCreate, DeviceResponse, SpeakRequest
 from app.util.db import get_db
 from app.util.conn import get_connected_ids
 from app.util.tts import speak_to_device_id, stream_path_to_device_id
-from app.util.conn import get_ws, get_lock
+from app.util.conn import get_ws
 
 
 router = APIRouter(prefix="")
@@ -27,7 +27,7 @@ def list_devices(db: Session = Depends(get_db)):
 
 @router.post("/devices", response_model=DeviceResponse)
 def register_device(payload: DeviceCreate, db: Session  = Depends(get_db)):
-    found = device_crud.get_by_name(db, payload.device_id)
+    found = device_crud.get_by_device_id(db, payload.device_id)
     if found:
         return found
     return device_crud.create(db, payload.device_id)

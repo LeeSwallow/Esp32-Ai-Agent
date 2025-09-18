@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.model.device import Device
 
 
-def get_by_name(db: Session, device_id: str) -> Optional[Device]:
+def get_by_device_id(db: Session, device_id: str) -> Optional[Device]:
     return db.query(Device).filter(Device.device_id == device_id).first()
 
 

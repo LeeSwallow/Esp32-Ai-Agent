@@ -19,6 +19,7 @@ os.makedirs(AUDIO_DIR, exist_ok=True)
 def synthesize_to_wav_file(text: str) -> str:
     filename = f"{uuid.uuid4().hex}.wav"
     path = os.path.join(AUDIO_DIR, filename)
+    # pyttsx3는 블로킹이므로 별도 스레드에서 돌리거나 to_thread로 래핑해서 사용
     tts_engine.save_to_file(text, path)
     tts_engine.runAndWait()
     return path
@@ -44,7 +45,8 @@ async def speak_to_device_id(device_id: str, text: str) -> None:
 
     lock = get_lock(device_id)
     async with lock:
-        wav_path = synthesize_to_wav_file(text)
+        # 블로킹 합성은 스레드로 이동
+        wav_path = await asyncio.to_thread(synthesize_to_wav_file, text)
         try:
             await stream_file_over_websocket(ws, wav_path)
         finally:

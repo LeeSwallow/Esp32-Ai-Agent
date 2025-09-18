@@ -22,9 +22,9 @@ def get_lock(device_id: str) -> asyncio.Lock:
     return _id_to_lock[device_id]
 
 def register_connection(device_id: str, ws: WebSocket) -> None:
-    if device_id in _id_to_ws:
-        _id_to_ws[device_id] = ws
-    _id_to_lock[device_id] = asyncio.Lock()
+    _id_to_ws[device_id] = ws
+    if device_id not in _id_to_lock:
+        _id_to_lock[device_id] = asyncio.Lock()
 
 
 def unregister_connection(device_id: str) -> None:
